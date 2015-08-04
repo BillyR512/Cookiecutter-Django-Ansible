@@ -1,0 +1,11 @@
+Include redis config file
+Add password to redis
+Figure out redmon + supervisord
+Figure out RabbitMQ
+Add support for Gunicorn
+Figure out and test varnish. Current role was taken from another repo.
+Get rid of django configurations and upgrade settings to support to django 1.8
+Change default ssh port? or add the ability to do so in cookie cutter
+Fail2ban optimization - need to change port in config if the default port is changed
+add ability to spin up digital ocean droplet?
+???

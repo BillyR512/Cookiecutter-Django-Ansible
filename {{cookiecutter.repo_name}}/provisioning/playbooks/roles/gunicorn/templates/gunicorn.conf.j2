@@ -1,0 +1,8 @@
+{% raw %}
+[program:gunicorn]
+command=sh {{ virtualenv_dir }}/bin/gunicorn_start
+user={{ django_user }}
+stdout_logfile = /var/log/supervisor/gunicorn_out.log
+stderr_logfile = /var/log/supervisor/gunicorn_err.log
+
+{% endraw %}

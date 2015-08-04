@@ -1,0 +1,9 @@
+[digital_ocean]
+web    ansible_ssh_host=
+
+
+[webservers]
+web
+
+[dbservers]
+web

@@ -1,0 +1,51 @@
+{% raw %}---
+
+- name: Ensure gunicorn is installed
+  pip: virtualenv={{ virtualenv_dir }} name=gunicorn
+
+- name: Create the Gunicorn script file
+  template: src=gunicorn_start.j2
+            dest={{ virtualenv_dir }}/bin/gunicorn_start
+            owner={{ django_user }}
+            group={{ django_user }}
+            mode=0755
+            backup=yes
+
+# - name: Create the application log folder
+#   file: path={{ gunicorn_log_dir }}
+#         owner={{ django_user }}
+#         group={{ django_user }}
+#         mode=0774
+#         state=directory
+
+# - name: Create the application log file
+#   command: touch {{ gunicorn_log_file }}
+#            creates={{ gunicorn_log_file }}
+
+- name: Create the virtualenv postactivate script to set environment variables
+  template: src=virtualenv_postactivate.j2
+            dest={{ virtualenv_dir }}/bin/postactivate
+            owner={{ django_user }}
+            group={{ django_user }}
+            mode=0640
+            backup=yes
+
+# - name: Set permission to the application log file
+#   file: path={{ gunicorn_log_file }}
+#         owner={{ django_user }}
+#         group={{ django_user }}
+#         mode=0664
+#         state=file
+
+
+- name: Create the gunicorn supervisor conf file
+  template: src=gunicorn.conf.j2
+            dest=/etc/supervisor/gunicorn.conf
+            owner={{ django_user }}
+            group={{ django_user }}
+            mode=0640
+            backup=yes
+  sudo: True
+  notify:
+    - restart supervisord
+{% endraw %}

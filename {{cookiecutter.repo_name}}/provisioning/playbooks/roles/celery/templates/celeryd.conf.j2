@@ -1,0 +1,32 @@
+{% raw %}[program:celeryd]
+command={{ virtualenv_dir }}/bin/celery -A config worker --loglevel=INFO
+directory={{ django_root_dir }}
+user={{ django_user }}
+group=www-data
+numprocs=1
+stdout_logfile=/var/log/supervisor/celeryd.log
+stderr_logfile=/var/log/supervisor/celeryd_error.log
+autostart=true
+autorestart=true
+startsecs=5
+
+environment={% for key, value in env_vars.items() %}{{ key }}="{{ value }}"{% if not loop.last %},{% endif %}{% endfor %}
+
+; Need to wait for currently executing tasks to finish at shutdown.
+; Increase this if you have very long running tasks.
+stopwaitsecs = 600
+
+[program:flower]
+command={{ virtualenv_dir }}/bin/celery -A config flower --port=5050 --basic_auth={{django_user}}:{{ default_pass }}
+directory={{ django_root_dir }}
+user={{ django_user }}
+group=www-data
+numprocs=1
+stdout_logfile=/var/log/supervisor/flower.log
+stderr_logfile=/var/log/supervisor/flower-err.log
+autostart=true
+autorestart=true
+startsecs=5
+stopwaitsecs = 600
+
+{% endraw %}

@@ -1,0 +1,54 @@
+{% raw %}
+
+---
+# Install elasticsearch
+
+# install apt key
+- apt_key: url=http://packages.elasticsearch.org/GPG-KEY-elasticsearch state=present
+  sudo: True
+
+# set dedicated repository
+- apt_repository: repo="deb http://packages.elasticsearch.org/elasticsearch/{{es_version}}/debian stable main" state=present
+  sudo: True
+
+# install elasticsearch with dependancies
+- name: install elasticsearch
+  apt: name={{ item }} state=latest force=yes
+  tags: elasticsearch
+  with_items:
+    - elasticsearch
+    - openjdk-7-jre-headless
+    - openntpd
+  notify: restart Elasticsearch
+  sudo: True
+
+# set limits.conf
+- name: limits.conf tuning
+  lineinfile: dest=/etc/security/limits.conf line="{{ item }}"
+  tags: elasticsearch
+  with_items:
+    - 'elasticsearch soft nofile 32000'
+    - 'elasticsearch hard nofile 32000'
+  sudo: True
+
+# disabled for now and currently running elasticsearch from supervisor.
+# # start elasticsearch on boot
+# - name: start elasticsearch on boot
+#   command: update-rc.d elasticsearch defaults
+#   sudo: True
+
+- name: add elasticsearch.conf file to supervisor
+  template: >
+    src=elasticsearch.conf
+    dest=/etc/supervisor/elasticsearch.conf
+  sudo: True
+
+# ensure service started
+- service: name=elasticsearch state=started
+  when: es_manage_service
+  sudo: True
+
+# install plugins
+- include: plugins.yml
+
+{% endraw %}

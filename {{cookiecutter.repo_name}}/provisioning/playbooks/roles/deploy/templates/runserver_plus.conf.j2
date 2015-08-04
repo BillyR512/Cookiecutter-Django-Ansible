@@ -1,0 +1,17 @@
+{% raw %}[program:runserver_plus]
+command=/usr/local/bin/rs
+directory={{ django_root_dir }}
+user={{ django_user }}
+group={{ django_user }}
+numprocs=1
+
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/runserver_plus.log
+stdout_logfile_maxbytes=10MB
+stdout_logfile_backups=3
+
+autostart=true
+autorestart=true
+
+environment={% for key, value in env_vars.items() %}{{ key }}="{{ value }}"{% if not loop.last %},{% endif %}{% endfor %}
+{% endraw %}

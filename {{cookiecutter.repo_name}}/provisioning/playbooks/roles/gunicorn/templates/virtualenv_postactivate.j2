@@ -1,0 +1,7 @@
+{% raw %}
+#!/bin/sh
+
+{% for variable_name, value in env_vars.iteritems() %}
+export {{ variable_name }}="{{ value }}"
+{% endfor %}
+{% endraw %}

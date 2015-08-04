@@ -1,0 +1,8 @@
+[vagrant]
+host    ansible_ssh_host=192.168.88.99
+
+[webservers]
+host
+
+[dbservers]
+host

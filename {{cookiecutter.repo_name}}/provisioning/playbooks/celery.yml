@@ -1,0 +1,10 @@
+---
+- hosts: webservers
+  gather_facts: yes
+  remote_user: "{{ django_user }}"
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/digital_ocean.yml
+  roles:
+    - { role: celery, when: install_celery }
+

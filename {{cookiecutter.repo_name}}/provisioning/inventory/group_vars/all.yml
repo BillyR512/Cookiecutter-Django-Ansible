@@ -1,0 +1,79 @@
+---
+six_hours: 21600
+project_name: {{cookiecutter.repo_name}}
+git_repo: {{ cookiecutter.repo_url }}
+git_name: {{cookiecutter.author_name}}
+git_email: {{cookiecutter.email}}
+
+private_ssh_key_path: {{cookiecutter.private_ssh_key_path}}
+public_ssh_key_path: {{cookiecutter.public_ssh_key_path}}
+
+
+django_user: django
+# crypted password, generated on a Linux box using: echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "DjangoUser")' | python -
+default_pass: DjangoUser
+django_pass: DjksEXTvEcZoc
+
+use_ssl: {{ cookiecutter.use_ssl }}
+
+{% raw %}
+code_root_dir: /var/www/django
+django_root_dir: "{{ code_root_dir }}/{{ project_name }}"
+virtualenv_dir: /home/{{django_user}}/.virtualenvs/{{project_name}}
+# relative to code_root_dir
+reqs_dir: "{{ code_root_dir }}/requirements"
+{% endraw %}
+# dotted path to your wsgi.py, relative to code_root_dir
+wsgi_path: config.wsgi
+settings_module: config.settings
+
+# Elasticsearch version from debian repository
+es_version: 1.5
+# Address of elasticsearch used by fluentd
+es_fqdn: localhost
+es_port: 9200
+# Manage service
+es_manage_service: True
+# Curator tool
+install_curator: False
+curator_max_keep_days: 90
+# Head plugin
+install_head: False
+# ElasticHQ plugin
+install_eshq: False
+# Marvel plugin
+install_marvel: False
+
+# Varnish
+varnish_listen_port: 80
+varnish_storage: "file,/tmp,64m"
+varnish_backend_host: 127.0.0.1
+varnish_backend_port: 8080
+varnish_service_name: varnish
+varnish_from_source_working_dir: "/opt/"
+varnish_secret: "54f45f2a-2dac-48e0-b561-824a7564fc96"
+varnish_vcl_file: "varnish.vcl"
+
+# gunicorn
+
+gunicorn_num_workers: 3
+gunicorn_max_requests: 0
+gunicorn_log_dir: /var/log/supervisor
+gunicorn_log_file: "{{ gunicorn_log_dir }}/gunicorn_supervisor.log"
+
+#swap file
+create_swap_file: True
+swap_file_path: /swapfile1
+swap_file_size: 524288 #512MB
+
+# Other Packages
+install_rabbitmq: {{ cookiecutter.install_rabbitmq }}
+install_redis: {{ cookiecutter.install_redis }}
+install_celery: {{ cookiecutter.install_celery }}
+install_nginx: {{ cookiecutter.install_nginx }}
+install_gunicorn: {{ cookiecutter.install_gunicorn }}
+install_uwsgi: {{ cookiecutter.install_uwsgi }}
+install_elasticsearch: {{ cookiecutter.install_elasticsearch }}
+install_varnish: {{ cookiecutter.install_varnish }}
+
+

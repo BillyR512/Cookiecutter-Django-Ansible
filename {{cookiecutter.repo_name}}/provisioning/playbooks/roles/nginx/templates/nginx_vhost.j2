@@ -1,0 +1,40 @@
+{% raw %}
+upstream app_server {
+    server 127.0.0.1:8001;
+}
+
+server {
+    server_name www.{{fqdn}};
+    return 301 $scheme://{{fqdn}}$request_uri;
+}
+
+server {
+    listen                  80;
+    listen                  [::]:80;
+    server_name             {{fqdn}};
+    charset                 utf-8;
+    client_max_body_size    75M;
+    root                    {{code_root_dir}};
+
+    # serve static files
+    # TODO: remove when S3 is setup
+    location /static/sass {
+        deny all;
+        return 404;
+    }
+
+    location /static {
+        alias /var/www/django/staticfiles;
+    }
+    # end static files
+
+    location / {
+        try_files $uri @uwsgi;
+    }
+
+    location @uwsgi {
+        include     uwsgi_params;
+        uwsgi_pass  app_server;
+    }
+}
+{% endraw %}

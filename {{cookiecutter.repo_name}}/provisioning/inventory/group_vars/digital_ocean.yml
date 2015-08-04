@@ -1,0 +1,39 @@
+---
+fqdn: {{cookiecutter.domain_name}}
+root_user: root
+
+
+droplet_name: "test.dev.1"
+droplet_size: "512mb"
+droplet_region: "nyc1"
+droplet_type: "ubuntu-14-04-x64"
+DO_TOKEN:
+do_api_key:
+do_client_id:
+
+# postgres
+postgres_user_name: "{{ cookiecutter.database_user }}"
+postgres_db_name: "{{ cookiecutter.database_name }}"
+postgres_password: {{ cookiecutter.database_password }}
+{% raw %}
+postgres_ip: "{{ hostvars[groups['dbservers'][0]].ansible_eth1.ipv4.address }}"
+{% endraw %}
+
+# rabbitmq
+rabbitmq_user: {{ cookiecutter.deployment_user }}
+rabbitmq_password: {{ cookiecutter.deployment_user_password }}
+rabbit_node: rabbit@localhost
+
+reqs_file: production.txt
+
+is_production: True
+
+env_vars:
+  DJANGO_SECRET_KEY: {{ cookiecutter.secret_key }}
+{% raw %}
+  DJANGO_SETTINGS_MODULE: config.settings
+  DJANGO_CONFIGURATION: Production
+  DATABASE_URL: "postgres://{{ postgres_user_name }}:{{ postgres_password }}@{{ postgres_ip }}:5432/{{ postgres_db_name }}"
+  RABBITMQ_URL: "amqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@localhost:5672//{{ project_name }}"
+  REDIS_URL: "redis://localhost:6379/0"
+{% endraw %}

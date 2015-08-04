@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  connection: local
+  serial: 1
+  gather_facts: no
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/digital_ocean.yml
+  roles:
+    - { role: digital_ocean }

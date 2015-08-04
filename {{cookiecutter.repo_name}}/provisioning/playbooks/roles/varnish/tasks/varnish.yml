@@ -1,0 +1,4 @@
+---
+- name: Ensure Varnish is at the desired version
+  apt: pkg=varnish state=latest
+  sudo: True

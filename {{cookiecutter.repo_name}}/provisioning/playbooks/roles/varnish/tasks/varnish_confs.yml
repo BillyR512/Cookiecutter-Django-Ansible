@@ -1,0 +1,24 @@
+{% raw %}---
+- name: Ensure /etc/default/varnish configuration file is up to date
+  template: src=varnish_default dest=/etc/default/varnish
+  notify: restart varnish
+  sudo: True
+
+- name: Ensure /etc/varnish/ exists
+  file: path=/etc/varnish/ state=directory
+  sudo: True
+
+- name: Ensure varnish.vcl configuration file is up to date
+  template: src={{ varnish_vcl_file }} dest=/etc/varnish/default.vcl
+  notify: reload varnish
+  sudo: True
+
+- name: Ensure varnish_secret is in place
+  template: src=varnish_secret dest=/etc/varnish/secret
+  notify: restart varnish
+  sudo: True
+
+- name: Ensure varnish is running
+  service: name=varnish state=started
+  sudo: True
+{% endraw %}

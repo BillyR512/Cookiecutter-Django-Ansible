@@ -1,0 +1,51 @@
+# Bleeding edge Django
+django>=1.8,<1.9
+
+# Configuration
+django-configurations>=0.6,<1.0
+django-secure==1.0.1
+django-cache-url==0.8.0
+dj-database-url==0.3.0
+
+# Forms
+django-braces==1.4.0
+django-crispy-forms==1.4.0
+django-floppyforms==1.3.0
+
+# Models
+django-model-utils==2.2
+
+# Images
+Pillow==2.8.1
+
+
+# For user registration, either via email or social
+# Well-built with regular release cycles!
+django-allauth==0.19.1
+
+# For the persistence stores
+psycopg2==2.6
+{% if cookiecutter.install_redis == "True" %}
+redis==2.10.3
+{% endif %}
+
+# Unicode slugification
+unicode-slugify==0.1.3
+django-autoslug==1.7.2
+
+
+# Useful things
+django-avatar==2.0
+django-extensions==1.5.2
+ipython
+
+# Task queue
+celery==3.1.17
+
+{% if cookiecutter.install_elasticsearch == "True" %}
+# search
+haystack==0.15
+elasticsearch==1.4.0
+{% endif %}
+
+# Your custom requirements go here

@@ -1,0 +1,15 @@
+{% raw %}---
+- hosts: webservers
+  gather_facts: yes
+  remote_user: "{{ django_user }}"
+  roles:
+    - { role: python }
+    - { role: supervisor }
+    - { role: uwsgi, when: install_uwsgi }
+    - { role: nginx, when: install_nginx }
+    - { role: redis, when: install_redis }
+    - { role: rabbitmq, when: install_rabbitmq }
+    - { role: elasticsearch, when: install_elasticsearch }
+    - { role: celery, when: install_celery }
+    - { role: varnish, when: install_varnish }
+{% endraw %}

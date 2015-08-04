@@ -1,0 +1,3 @@
+create_swap_file: yes
+swap_file_path: /swapfile1
+swap_file_size: 524288

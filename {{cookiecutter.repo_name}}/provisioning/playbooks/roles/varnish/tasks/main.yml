@@ -1,0 +1,3 @@
+---
+- include: varnish.yml
+- include: varnish_confs.yml

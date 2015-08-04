@@ -1,0 +1,7 @@
+---
+- hosts: webservers
+  gather_facts: yes
+  remote_user: "{{ django_user }}"
+  roles:
+    - { role: gunicorn, when: install_gunicorn }
+
