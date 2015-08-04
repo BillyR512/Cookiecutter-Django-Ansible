@@ -20,7 +20,7 @@
     "install_nginx" : "True",
     "install_gunicorn": "True",
     "install_uwsgi": "False",
-    "install_elasticsearch" : "True",
+    "install_elasticsearch": "True",
     "install_varnish": "True",
-    "use_ssl": "True",
+    "use_ssl": "True"
 }
