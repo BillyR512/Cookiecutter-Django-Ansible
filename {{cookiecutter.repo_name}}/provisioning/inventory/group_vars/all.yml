@@ -12,7 +12,7 @@ public_ssh_key_path: {{cookiecutter.public_ssh_key_path}}
 django_user: django
 # crypted password, generated on a Linux box using: echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "DjangoUser")' | python -
 default_pass: DjangoUser
-django_pass: DjksEXTvEcZoc
+django_pass: DjJ1Jt7Trc0W.
 
 use_ssl: {{ cookiecutter.use_ssl }}
 
