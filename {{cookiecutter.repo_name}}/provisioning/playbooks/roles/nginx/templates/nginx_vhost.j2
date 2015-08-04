@@ -1,20 +1,47 @@
 {% raw %}
 upstream app_server {
-    server 127.0.0.1:8001;
+    {% if install_uwsgi %}server 127.0.0.1:8001;{% endif %}
+    {% if install_gunicorn %}server unix:{{ virtualenv_dir }}/run/gunicorn.sock;{% endif %}
 }
 
+# redirect www requests
 server {
-    server_name www.{{fqdn}};
-    return 301 $scheme://{{fqdn}}$request_uri;
+    listen 80;
+    server_name    www.{{fqdn}};
+    return 301 https://{{fqdn}}$request_uri;
 }
 
+# redirect https://www requests to https://{{fqdn}}
+# server {
+#    listen 443;
+#    ssl on;
+#    ssl_certificate        /etc/nginx/ssl/crt.crt;
+#    ssl_certificate_key    /etc/nginx/ssl/key.key
+#    server_name www.{{fqdn}};
+#    return 301 https://{{fqdn}}$request_uri;
+# }
+
 server {
+    {% if use_ssl %}
+    # ssl config
+    listen                  443;
+    ssl on;
+    ssl_certificate      /etc/nginx/ssl/crt.crt;
+    ssl_certificate_key  /etc/nginx/ssl/crt.key;
+
+    {% else %}
+
     listen                  80;
     listen                  [::]:80;
+    {% endif %}
+
     server_name             {{fqdn}};
     charset                 utf-8;
-    client_max_body_size    75M;
-    root                    {{code_root_dir}};
+    client_max_body_size    4G;
+    ssl_session_cache    shared:SSL:10m;
+    ssl_session_timeout  10m;
+    ssl_ciphers RC4:HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
 
     # serve static files
     # TODO: remove when S3 is setup
@@ -24,17 +51,66 @@ server {
     }
 
     location /static {
-        alias /var/www/django/staticfiles;
+        alias {{ code_root_dir }}/staticfiles;
+        add_header    Cache-Control           public;
+        gzip on;
+        gzip_static on;
+        gzip_proxied any;
+        gzip_min_length 256;
+        gzip_comp_level 4;
+        gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss;
+
+        if ($request_uri ~* ".(jpg|jpeg|gif|gz|zip|flv|rar|wmv|avi|css|swf|png|htc|ico|mpeg|mpg|txt|mp3|mov|js)(\?v=[0-9.]+)?$") {
+            expires 1y;
+            access_log off;
+            break;
+        }
     }
     # end static files
 
+    location /media {
+        alias   {{ django_root_dir }}/media;
+        add_header    Cache-Control           public;
+        if ($request_uri ~* ".(jpg|jpeg|gif|gz|zip|flv|rar|wmv|avi|css|swf|png|htc|ico|mpeg|mpg|txt|mp3|mov|js)(\?v=[0-9.]+)?$") {
+            expires 1y;
+            access_log off;
+            break;
+        }
+    }
+    # end media
+
     location / {
-        try_files $uri @uwsgi;
+        proxy_redirect      off;
+        proxy_set_header    Host                    $host;
+        proxy_set_header    X-Real-IP               $remote_addr;
+        proxy_set_header    X-Forwarded-For         $proxy_add_x_forwarded_for;
+        proxy_set_header    X-Forwarded-Protocol    $scheme;
+        proxy_set_header    Cache-Control           public;
+        #proxy_pass          http://app_server;
+        add_header          X-Frame-Options         "SAMEORIGIN";
+
+        # Try to serve static files from nginx, no point in making an
+        # *application* server like Unicorn/Rainbows! serve static files.
+        if (!-f $request_filename) {
+            proxy_pass http://app_server;
+            break;
+        }
+
+        gzip on;
+        gzip_static on;
+        gzip_proxied any;
+        gzip_min_length 256;
+        gzip_comp_level 4;
+        gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss;
+
     }
 
-    location @uwsgi {
-        include     uwsgi_params;
-        uwsgi_pass  app_server;
+
+    location /robots.txt {
+        root                 {{ django_root_dir }}/static;
+        access_log           off;
+        log_not_found        off;
     }
 }
+
 {% endraw %}

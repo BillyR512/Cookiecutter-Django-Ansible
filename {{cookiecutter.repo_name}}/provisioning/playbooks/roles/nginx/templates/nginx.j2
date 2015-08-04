@@ -1,112 +1,55 @@
 {% raw %}
-upstream app_server {
-    server unix:{{ virtualenv_dir }}/run/gunicorn.sock;
+# config mostly gotten from http://blog.zachorr.com/nginx-setup/
+user www-data;
+worker_processes auto;
+worker_rlimit_nofile 48000;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 2048;
+    multi_accept on;
+    use epoll;
 }
 
-server {
-    listen 80;
-    server_name    www.{{fqdn}} {{fqdn}};
-    return 301 https://{{fqdn}}$request_uri;
-}
+http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
 
-# server {
-#    listen 443;
-#    ssl on;
-#    ssl_certificate        /etc/nginx/ssl/crt.crt;
-#    ssl_certificate_key    /etc/nginx/ssl/key.key
-#    server_name www.{{fqdn}};
-#    return 301 https://{{fqdn}}$request_uri;
-# }
+    # access_log off; increases IO performance
+    access_log  /var/log/nginx/access.log main;
+    error_log  /var/log/nginx/error.log warn;
 
-server {
-    {% if use_ssl %}
-    listen                  443;
-    ssl on;
-    ssl_certificate      /etc/nginx/ssl/rapidxpres.crt;
-    ssl_certificate_key  /etc/nginx/ssl/rapidxpres.key;
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
 
-    {% else %}
+    server_names_hash_bucket_size 64;
+    types_hash_max_size 2048;
 
-    listen                  80;
-    {% endif %}
+    keepalive_timeout 20;
 
-    server_name             {{fqdn}};
-    charset                 utf-8;
-    client_max_body_size    4G;
-    ssl_session_cache    shared:SSL:10m;
-    ssl_session_timeout  10m;
-    ssl_ciphers RC4:HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
+    client_header_timeout 20;
+    client_body_timeout 20;
 
-    # serve static files
-    # TODO: remove when S3 is setup
-    location /static/sass {
-        deny all;
-        return 404;
-    }
+    reset_timedout_connection on;
 
-    location /static {
-        alias {{ code_root_dir }}/staticfiles;
-        add_header    Cache-Control           public;
-        gzip on;
-        gzip_static on;
-        gzip_proxied any;
-        gzip_min_length 256;
-        gzip_comp_level 4;
-        gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss;
-
-        if ($request_uri ~* ".(jpg|jpeg|gif|gz|zip|flv|rar|wmv|avi|css|swf|png|htc|ico|mpeg|mpg|txt|mp3|mov|js)(\?v=[0-9.]+)?$") {
-            expires 1y;
-            access_log off;
-            break;
-        }
-    }
-    # end static files
-
-    location /media {
-        alias   {{ django_root_dir }}/media;
-        add_header    Cache-Control           public;
-        if ($request_uri ~* ".(jpg|jpeg|gif|gz|zip|flv|rar|wmv|avi|css|swf|png|htc|ico|mpeg|mpg|txt|mp3|mov|js)(\?v=[0-9.]+)?$") {
-            expires 1y;
-            access_log off;
-            break;
-        }
-    }
-    # end media
-
-    location / {
-        proxy_redirect      off;
-        proxy_set_header    Host                    $host;
-        proxy_set_header    X-Real-IP               $remote_addr;
-        proxy_set_header    X-Forwarded-For         $proxy_add_x_forwarded_for;
-        proxy_set_header    X-Forwarded-Protocol    $scheme;
-        proxy_set_header    Cache-Control           public;
-        #proxy_pass          http://app_server;
-        add_header          X-Frame-Options         "SAMEORIGIN";
-
-        # Try to serve static files from nginx, no point in making an
-        # *application* server like Unicorn/Rainbows! serve static files.
-        if (!-f $request_filename) {
-            proxy_pass http://app_server;
-            break;
-        }
-
-        gzip on;
-        gzip_static on;
-        gzip_proxied any;
-        gzip_min_length 256;
-        gzip_comp_level 4;
-        gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss;
-
-            # try_files $uri @uwsgi;
-    }
+    send_timeout 20;
 
 
-    location /robots.txt {
-        root                 {{ django_root_dir }}/static;
-        access_log           off;
-        log_not_found        off;
-    }
-}
+    include /etc/nginx/mime.types;
+    default_type text/html;
+    charset UTF-8;
 
-{% endraw %}
+
+    ## gzip commented out because of BREACH
+    # gzip on;
+    # gzip_static on;
+    # gzip_proxied any;
+    # gzip_min_length 256;
+    # gzip_comp_level 4;
+    # gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}{% endraw %}
