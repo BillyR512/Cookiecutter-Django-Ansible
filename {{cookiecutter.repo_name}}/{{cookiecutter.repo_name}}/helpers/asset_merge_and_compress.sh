@@ -1,3 +1,4 @@
+{% raw %}
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -237,5 +238,5 @@ function main() {
 # ./asset_merge_and_compress.sh main test_1.css test_2.css
 # ./asset_merge_and_compress.sh main ../spec/asset_merge_and_compress/css/set_1/level_1.css
 $*
-
+{% raw %}
 
